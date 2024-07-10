@@ -1,3 +1,4 @@
+import { getLensFrameMessage, isLensFrameActionPayload } from "frames.js/lens";
 import { farcasterHubContext, openframes } from "frames.js/middleware";
 import { createFrames } from "frames.js/next";
 import { isXmtpFrameActionPayload, getXmtpFrameMessage } from "frames.js/xmtp";
@@ -37,6 +38,23 @@ export const frames = createFrames<State>({
           }
           // If it is, get the frame message
           const result = await getXmtpFrameMessage(body);
+          return { ...result };
+        },
+      },
+    }),
+    openframes({
+      clientProtocol: {
+        id: "lens",
+        version: "1.0.0",
+      },
+      handler: {
+        isValidPayload: (body) => isLensFrameActionPayload(body),
+        getFrameMessage: async (body) => {
+          if (!isLensFrameActionPayload(body)) {
+            return undefined;
+          }
+          const result = await getLensFrameMessage(body);
+
           return { ...result };
         },
       },
